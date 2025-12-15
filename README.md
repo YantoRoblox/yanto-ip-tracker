@@ -1,62 +1,78 @@
 # Yanto IP Tracker
 
-Tool berbasis Bash untuk melihat informasi IP publik dan membaca koordinat Google Maps.
-Dibuat untuk tujuan edukasi dan pembelajaran networking dasar.
+Tool berbasis **Bash (Termux)** untuk menampilkan informasi **IP publik** dan membaca **koordinat / link Google Maps**.  
+Dibuat untuk tujuan **edukasi dan pembelajaran networking dasar**.
 
-Author: YantoSepinggan
-GitHub: https://github.com/YantoRoblox
+> ⚠️ Lokasi IP bersifat **perkiraan** (berdasarkan ISP), **bukan GPS real-time**.
 
---------------------------------------------------
+---
 
-CARA MENGGUNAKAN (TERMUX)
+## ✨ Fitur
+- Cek IP publik sendiri
+- Cek IP target
+- Baca koordinat latitude & longitude
+- Parsing link Google Maps
+- Tampilan terminal sederhana & interaktif
+- Ringan, tanpa database
 
-1. Update Termux dan install dependency
+---
 
+## 📱 Persyaratan
+- Termux (Android)
+- Koneksi internet
+
+---
+
+## 🔧 Instalasi
+
+Update package dan install dependency:
+
+```bash
 pkg update && pkg upgrade
 pkg install curl jq
 
-2. Download script dari GitHub
-
 curl -LO https://raw.githubusercontent.com/YantoRoblox/yanto-ip-tracker/refs/heads/main/yanto-ip.sh
-
-3. Beri izin eksekusi
 
 chmod +x yanto-ip.sh
 
-4. Jalankan script
 
 ./yanto-ip.sh
+```
 
-Jika berhasil, akan muncul tampilan:
-[ YANTO CYBER TRACKER ]
-Created by YantoSepinggan
-
---------------------------------------------------
-
-MENU & FUNGSI
-
+🧭 Menu & Cara Pakai
 [01] Cek IP Saya
-Menampilkan informasi IP publik perangkat yang digunakan.
-Lokasi yang ditampilkan adalah perkiraan berdasarkan ISP
+
+Menampilkan informasi IP publik perangkat yang digunakan saat ini.
+
+Catatan:
+
+Lokasi hanya perkiraan
+
+Bisa menunjuk kota / pusat ISP
 
 [02] Cek IP / Maps Target
-Mendukung 3 jenis input:
 
-- IP Address
-  Contoh: 8.8.8.8
+Mendukung beberapa jenis input:
+```IP Address
+8.8.4.4
+```
 
-- Koordinat Latitude,Longitude
-  Contoh: kordinat ip 
+```Koordinat Latitude,Longitude
+-6.21462,106.84513
+```
 
-- Link Google Maps
-  Contoh:
-  https://www.google.com/maps/place/
+```Link Google Maps
+https://www.google.com/maps/place/-7.250445+112.768845
+```
 
-Script akan otomatis mendeteksi jenis input dan menampilkan hasilnya.
+Contoh Output
+IP Address  : 8.8.4.4
+Provider    : Google LLC
+Kota        : Jakarta
+Negara      : Indonesia
+Google Maps :
+https://maps.google.com/?q=-6.21462,106.84513
 
-[00] Exit
-Keluar dari program.
---------------------------------------------------
 
-Yanto IP Tracker
-Created by YantoSepinggan
+
+
