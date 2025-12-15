@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# ================= COLORS =================
 M="\e[1;31m"
 H="\e[1;32m"
 K="\e[1;33m"
@@ -9,14 +8,12 @@ C="\e[1;36m"
 P="\e[1;37m"
 R="\e[0m"
 
-# ================= DEP CHECK =================
 if ! command -v jq &> /dev/null; then
     echo -e "${M}[!] Error:${P} Paket 'jq' belum terinstall.${R}"
-    echo -e "${K}    Install dengan:${P} pkg install jq${R}"
+    echo -e "${K}Install dengan:${P} pkg install jq${R}"
     exit 1
 fi
 
-# ================= BANNER =================
 banner() {
 clear
 printf "${H}"
@@ -36,7 +33,6 @@ printf "${P}    [ YANTO CYBER TRACKER ]\n"
 printf "${C}    Created by YantoSepinggan${R}\n\n"
 }
 
-# ================= PARSE MAPS =================
 parse_maps() {
     input="$1"
     coords=$(echo "$input" | grep -oE '[-]?[0-9]+\.[0-9]+\+[-]?[0-9]+\.[0-9]+')
@@ -49,7 +45,6 @@ parse_maps() {
     fi
 }
 
-# ================= SHOW MAP =================
 tampil_maps() {
     banner
     echo -e "${H}[✓] KOORDINAT TERDETEKSI${R}\n"
@@ -63,7 +58,6 @@ tampil_maps() {
     menu
 }
 
-# ================= IP TRACK =================
 lacak_ip() {
     target="$1"
     banner
@@ -115,7 +109,6 @@ lacak_ip() {
     menu
 }
 
-# ================= INPUT =================
 masukan_target() {
     echo ""
     echo -e "${C}Masukkan IP / Link Google Maps / Koordinat:${R}"
@@ -134,7 +127,6 @@ masukan_target() {
     fi
 }
 
-# ================= MENU =================
 menu() {
     banner
     echo -e "${K}[01]${P} Cek IP Saya"
