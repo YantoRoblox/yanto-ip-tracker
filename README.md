@@ -30,12 +30,8 @@ Update package dan install dependency:
 ```bash
 pkg update && pkg upgrade
 pkg install curl jq
-
 curl -LO https://raw.githubusercontent.com/YantoRoblox/yanto-ip-tracker/refs/heads/main/yanto-ip.sh
-
 chmod +x yanto-ip.sh
-
-
 ./yanto-ip.sh
 ```
 
