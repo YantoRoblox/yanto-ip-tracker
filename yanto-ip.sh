@@ -68,6 +68,92 @@ check_ip() {
     
     if [[ -z "$ip_target" ]]; then
         printf "\e[1;34m  Sedang mengambil data IP Kamu...\e[0m\n\n"
+        url="http://ip-api.com/json/"
+    else
+        printf "\e[1;34m  Sedang melacak IP: $ip_target ...\e[0m\n\n"
+        url="http://ip-api.com/json/$ip_target"
+    fi
+
+    response=$(curl -s --max-time 10 "$url")
+    status=$(echo $response | jq -r '.status')
+
+    if [[ "$status" == "fail" ]]; then
+        echo "  [!] GAGAL! IP tidak valid atau tidak ditemukan."
+        echo "  [!] Pesan: $(echo $response | jq -r '.message')"
+        echo ""
+        read -p "  Tekan Enter untuk kembali..."
+        banner
+        menu
+    else
+        myip=$(echo $response | jq -r '.query')
+        mycity=$(echo $response | jq -r '.city')
+        myregion=$(echo $response | jq -r '.regionName')
+        mycountry=$(echo $response | jq -r '.country')
+        mylat=$(echo $response | jq -r '.lat')
+        mylon=$(echo $response | jq -r '.lon')
+        mytime=$(echo $response | jq -r '.timezone')
+        mypostal=$(echo $response | jq -r '.zip')
+        myisp=$(echo $response | jq -r '.isp')
+        myorg=$(echo $response | jq -r '.org')
+        myas=$(echo $response | jq -r '.as')
+
+        printf "  \e[1;93mIP Address    \e[1;96m:\e[1;92m $myip\e[0m\n"
+        printf "  \e[1;93mKota          \e[1;96m:\e[1;92m $mycity\e[0m\n"
+        printf "  \e[1;93mProvinsi      \e[1;96m:\e[1;92m $myregion\e[0m\n"
+        printf "  \e[1;93mNegara        \e[1;96m:\e[1;92m $mycountry\e[0m\n"
+        printf "\e[0m\n"
+        printf "  \e[1;93mLatitude      \e[1;96m:\e[1;92m $mylat\e[0m\n"
+        printf "  \e[1;93mLongitude     \e[1;96m:\e[1;92m $mylon\e[0m\n"
+        printf "  \e[1;93mTime Zone     \e[1;96m:\e[1;92m $mytime\e[0m\n"
+        printf "  \e[1;93mKode Pos      \e[1;96m:\e[1;92m $mypostal\e[0m\n"
+        printf "\e[0m\n"
+        printf "  \e[1;93mProvider/ISP  \e[1;96m:\e[1;92m $myisp ($myorg)\e[0m\n"
+        printf "  \e[1;93mASN           \e[1;96m:\e[1;92m $myas\e[0m\n"
+        printf "\e[0m\n"
+        printf "  \e[1;93mGoogle Maps   \e[1;96m:\e[1;94m https://maps.google.com/?q=$mylat,$mylon\e[0m\n"
+        printf "\e[0m\n"
+        
+        read -p $'  \e[1;31m[Enter]\e[1;96m Kembali ke menu...\e[0m'
+        banner
+        menu
+    fi
+}
+
+banner
+menuif [[ $option == 1 || $option == 01 ]]; then
+  check_ip "" 
+elif [[ $option == 2 || $option == 02 ]]; then
+  input_target
+elif [[ $option == 0 || $option == 00 ]]; then
+  echo ""
+  echo "  Sampai jumpa!"
+  exit 0
+else
+  echo "  Pilihan salah!"
+  sleep 1
+  banner
+  menu
+fi
+}
+
+input_target() {
+    printf "\e[0m\n"
+    read -p $'  \e[1;31m[\e[1;37m~\e[1;31m]\e[1;92m Masukkan IP Target \e[1;96m: \e[1;93m' target
+    if [[ -z "$target" ]]; then
+        echo "  IP tidak boleh kosong!"
+        sleep 1
+        menu
+    else
+        check_ip "$target"
+    fi
+}
+
+check_ip() {
+    ip_target=$1
+    banner
+    
+    if [[ -z "$ip_target" ]]; then
+        printf "\e[1;34m  Sedang mengambil data IP Kamu...\e[0m\n\n"
         # URL untuk IP sendiri
         url="http://ip-api.com/json/"
     else
