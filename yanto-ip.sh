@@ -1,366 +1,134 @@
 #!/bin/bash
 
-# Cek apakah jq sudah terinstall
+# --- WARNA (Supaya Tampilannya Keren) ---
+M="\e[1;31m" # Merah
+H="\e[1;32m" # Hijau
+K="\e[1;33m" # Kuning
+B="\e[1;34m" # Biru
+C="\e[1;36m" # Cyan
+P="\e[1;37m" # Putih
+R="\e[0m"    # Reset
+
+# --- CEK ALAT ---
 if ! command -v jq &> /dev/null; then
-    echo ""
-    echo "[!] Error: Paket 'jq' belum terinstall."
-    echo "    Silakan ketik: pkg install jq"
+    echo -e "${M}[!] Error:${P} Paket 'jq' belum install."
+    echo -e "${K}    Ketik: pkg install jq${R}"
     exit 1
 fi
 
+# --- BANNER KEREN ---
 banner() {
 clear
-printf "\e[0m\n"
-printf "\e[1;36m   __  __   ___   _   _   _____   ___   \e[0m\e[1;33mIP TRACER\e[0m\n"
-printf "\e[1;36m  |  \/  | / _ \ | \ | | |_   _| |  _ \ \e[0m\n"
-printf "\e[1;36m  | \  / || | | ||  \| |   | |   | |_) |\e[0m\n"
-printf "\e[1;36m  | |\/| || | | || . \ |   | |   |  __/ \e[0m\n"
-printf "\e[1;36m  | |  | || |_| || |\  |  _| |_  | |    \e[0m\n"
-printf "\e[1;36m  |_|  |_| \___/ |_| \_| |_____| |_|    \e[0m\n"
-printf "\e[0m\n"
-printf "\e[1;33m               YANTO IP TRACKER\e[0m\n"
-printf "\e[1;37m          (Versi Fixed Anti-Error)\e[0m\n"
-printf "\e[0m\n"
-printf "\e[1;37m          Created & Modified by\e[0m \e[1;32mYantoSepinggan\e[0m\n"
-printf "\e[1;37m                Balikpapan - Indonesia\e[0m\n"
-printf "\e[0m\n"
+printf "${C}"
+cat << "EOF"
+  __  __             _       
+ |  \/  | ___  _ __ (_)_ __  
+ | |\/| |/ _ \| '_ \| | '_ \ 
+ | |  | | (_) | | | | | |_) |
+ |_|  |_|\___/|_| |_|_| .__/ 
+                      |_|    
+EOF
+printf "${P}    [ IP TRACKER PREMIUM V2 ]\n"
+printf "${H}    Created by YantoSepinggan${R}\n\n"
 }
 
+# --- MENU UTAMA ---
 menu() {
-printf "\e[0m\n"
-printf "\e[1;31m  [\e[1;37m01\e[1;31m]\e[1;33m Cek Lokasi Saya (My IP)\e[0m\n"
-printf "\e[1;31m  [\e[1;37m02\e[1;31m]\e[1;33m Lacak Target IP\e[0m\n"
-printf "\e[1;31m  [\e[1;37m00\e[1;31m]\e[1;33m Keluar\e[0m\n"
-printf "\e[0m\n"
-read -p $'  \e[1;31m[\e[1;37m~\e[1;31m]\e[1;92m Pilih Menu \e[1;96m: \e[1;93m' option
+    printf "${K}[01]${P} Cek IP Saya (My Location)\n"
+    printf "${K}[02]${P} Lacak Target (Track IP)\n"
+    printf "${K}[00]${P} Keluar (Exit)\n"
+    echo ""
+    read -p "root@yanto-termux:~# " pilih
 
-if [[ $option == 1 || $option == 01 ]]; then
-  check_ip "" 
-elif [[ $option == 2 || $option == 02 ]]; then
-  input_target
-elif [[ $option == 0 || $option == 00 ]]; then
-  echo ""
-  echo "  Sampai jumpa!"
-  exit 0
-else
-  echo "  Pilihan salah!"
-  sleep 1
-  banner
-  menu
-fi
+    if [[ $pilih == 1 || $pilih == 01 ]]; then
+        lacak_ip ""
+    elif [[ $pilih == 2 || $pilih == 02 ]]; then
+        masukan_target
+    elif [[ $pilih == 0 || $pilih == 00 ]]; then
+        echo -e "\n${H}Terima kasih telah menggunakan tools ini!${R}"
+        exit 0
+    else
+        echo -e "${M}Pilihan tidak ada!${R}"
+        sleep 1
+        banner
+        menu
+    fi
 }
 
-input_target() {
-    printf "\e[0m\n"
-    read -p $'  \e[1;31m[\e[1;37m~\e[1;31m]\e[1;92m Masukkan IP Target \e[1;96m: \e[1;93m' target
+# --- INPUT IP TARGET ---
+masukan_target() {
+    echo ""
+    echo -e "${C}Masukkan Alamat IP Target:${R}"
+    read -p ">> " target
     if [[ -z "$target" ]]; then
-        echo "  IP tidak boleh kosong!"
-        sleep 1
+        banner
         menu
     else
-        check_ip "$target"
+        lacak_ip "$target"
     fi
 }
 
-check_ip() {
-    ip_target=$1
+# --- PROSES PELACAKAN ---
+lacak_ip() {
+    target=$1
     banner
     
-    if [[ -z "$ip_target" ]]; then
-        printf "\e[1;34m  Sedang mengambil data IP Kamu...\e[0m\n\n"
+    if [[ -z "$target" ]]; then
+        echo -e "${B}[*] Sedang mengambil data IP Kamu...${R}"
         url="http://ip-api.com/json/"
     else
-        printf "\e[1;34m  Sedang melacak IP: $ip_target ...\e[0m\n\n"
-        url="http://ip-api.com/json/$ip_target"
+        echo -e "${B}[*] Sedang melacak IP: $target ...${R}"
+        url="http://ip-api.com/json/$target"
     fi
 
+    # Ambil Data
     response=$(curl -s --max-time 10 "$url")
     status=$(echo $response | jq -r '.status')
 
     if [[ "$status" == "fail" ]]; then
-        echo "  [!] GAGAL! IP tidak valid atau tidak ditemukan."
-        echo "  [!] Pesan: $(echo $response | jq -r '.message')"
         echo ""
-        read -p "  Tekan Enter untuk kembali..."
-        banner
-        menu
-    else
-        myip=$(echo $response | jq -r '.query')
-        mycity=$(echo $response | jq -r '.city')
-        myregion=$(echo $response | jq -r '.regionName')
-        mycountry=$(echo $response | jq -r '.country')
-        mylat=$(echo $response | jq -r '.lat')
-        mylon=$(echo $response | jq -r '.lon')
-        mytime=$(echo $response | jq -r '.timezone')
-        mypostal=$(echo $response | jq -r '.zip')
-        myisp=$(echo $response | jq -r '.isp')
-        myorg=$(echo $response | jq -r '.org')
-        myas=$(echo $response | jq -r '.as')
-
-        printf "  \e[1;93mIP Address    \e[1;96m:\e[1;92m $myip\e[0m\n"
-        printf "  \e[1;93mKota          \e[1;96m:\e[1;92m $mycity\e[0m\n"
-        printf "  \e[1;93mProvinsi      \e[1;96m:\e[1;92m $myregion\e[0m\n"
-        printf "  \e[1;93mNegara        \e[1;96m:\e[1;92m $mycountry\e[0m\n"
-        printf "\e[0m\n"
-        printf "  \e[1;93mLatitude      \e[1;96m:\e[1;92m $mylat\e[0m\n"
-        printf "  \e[1;93mLongitude     \e[1;96m:\e[1;92m $mylon\e[0m\n"
-        printf "  \e[1;93mTime Zone     \e[1;96m:\e[1;92m $mytime\e[0m\n"
-        printf "  \e[1;93mKode Pos      \e[1;96m:\e[1;92m $mypostal\e[0m\n"
-        printf "\e[0m\n"
-        printf "  \e[1;93mProvider/ISP  \e[1;96m:\e[1;92m $myisp ($myorg)\e[0m\n"
-        printf "  \e[1;93mASN           \e[1;96m:\e[1;92m $myas\e[0m\n"
-        printf "\e[0m\n"
-        printf "  \e[1;93mGoogle Maps   \e[1;96m:\e[1;94m https://maps.google.com/?q=$mylat,$mylon\e[0m\n"
-        printf "\e[0m\n"
-        
-        read -p $'  \e[1;31m[Enter]\e[1;96m Kembali ke menu...\e[0m'
-        banner
-        menu
-    fi
-}
-
-banner
-menuif [[ $option == 1 || $option == 01 ]]; then
-  check_ip "" 
-elif [[ $option == 2 || $option == 02 ]]; then
-  input_target
-elif [[ $option == 0 || $option == 00 ]]; then
-  echo ""
-  echo "  Sampai jumpa!"
-  exit 0
-else
-  echo "  Pilihan salah!"
-  sleep 1
-  banner
-  menu
-fi
-}
-
-input_target() {
-    printf "\e[0m\n"
-    read -p $'  \e[1;31m[\e[1;37m~\e[1;31m]\e[1;92m Masukkan IP Target \e[1;96m: \e[1;93m' target
-    if [[ -z "$target" ]]; then
-        echo "  IP tidak boleh kosong!"
-        sleep 1
-        menu
-    else
-        check_ip "$target"
-    fi
-}
-
-check_ip() {
-    ip_target=$1
-    banner
-    
-    if [[ -z "$ip_target" ]]; then
-        printf "\e[1;34m  Sedang mengambil data IP Kamu...\e[0m\n\n"
-        # URL untuk IP sendiri
-        url="http://ip-api.com/json/"
-    else
-        printf "\e[1;34m  Sedang melacak IP: $ip_target ...\e[0m\n\n"
-        # URL untuk IP target
-        url="http://ip-api.com/json/$ip_target"
-    fi
-
-    # Mengambil data menggunakan curl dan menyimpannya di variabel response
-    response=$(curl -s --max-time 10 "$url")
-
-    # Cek status sukses atau gagal pakai jq
-    status=$(echo $response | jq -r '.status')
-
-    if [[ "$status" == "fail" ]]; then
-        echo "  [!] GAGAL! IP tidak valid atau tidak ditemukan."
-        echo "  [!] Pesan: $(echo $response | jq -r '.message')"
+        echo -e "${M}[!] GAGAL! IP Tidak Valid / Server Down.${R}"
+        echo -e "${K}Pesan: $(echo $response | jq -r '.message')${R}"
         echo ""
-        read -p "  Tekan Enter untuk kembali..."
+        read -p "Tekan Enter untuk kembali..."
         banner
         menu
     else
-        # Parsing data JSON menggunakan jq (Jauh lebih akurat daripada grep)
-        myip=$(echo $response | jq -r '.query')
-        mycity=$(echo $response | jq -r '.city')
-        myregion=$(echo $response | jq -r '.regionName')
-        mycountry=$(echo $response | jq -r '.country')
-        mylat=$(echo $response | jq -r '.lat')
-        mylon=$(echo $response | jq -r '.lon')
-        mytime=$(echo $response | jq -r '.timezone')
-        mypostal=$(echo $response | jq -r '.zip')
-        myisp=$(echo $response | jq -r '.isp')
-        myorg=$(echo $response | jq -r '.org')
-        myas=$(echo $response | jq -r '.as')
+        # Parsing Data
+        ip=$(echo $response | jq -r '.query')
+        kota=$(echo $response | jq -r '.city')
+        prov=$(echo $response | jq -r '.regionName')
+        negara=$(echo $response | jq -r '.country')
+        isp=$(echo $response | jq -r '.isp')
+        lat=$(echo $response | jq -r '.lat')
+        lon=$(echo $response | jq -r '.lon')
+        zona=$(echo $response | jq -r '.timezone')
+        as=$(echo $response | jq -r '.as')
 
-        # Menampilkan Hasil
-        printf "  \e[1;93mIP Address    \e[1;96m:\e[1;92m $myip\e[0m\n"
-        printf "  \e[1;93mKota          \e[1;96m:\e[1;92m $mycity\e[0m\n"
-        printf "  \e[1;93mProvinsi      \e[1;96m:\e[1;92m $myregion\e[0m\n"
-        printf "  \e[1;93mNegara        \e[1;96m:\e[1;92m $mycountry\e[0m\n"
-        printf "\e[0m\n"
-        printf "  \e[1;93mLatitude      \e[1;96m:\e[1;92m $mylat\e[0m\n"
-        printf "  \e[1;93mLongitude     \e[1;96m:\e[1;92m $mylon\e[0m\n"
-        printf "  \e[1;93mTime Zone     \e[1;96m:\e[1;92m $mytime\e[0m\n"
-        printf "  \e[1;93mKode Pos      \e[1;96m:\e[1;92m $mypostal\e[0m\n"
-        printf "\e[0m\n"
-        printf "  \e[1;93mProvider/ISP  \e[1;96m:\e[1;92m $myisp ($myorg)\e[0m\n"
-        printf "  \e[1;93mASN           \e[1;96m:\e[1;92m $myas\e[0m\n"
-        printf "\e[0m\n"
-        printf "  \e[1;93mGoogle Maps   \e[1;96m:\e[1;94m https://maps.google.com/?q=$mylat,$mylon\e[0m\n"
-        printf "\e[0m\n"
+        # TAMPILAN HASIL RAPI
+        echo ""
+        echo -e "  ${P}=================================${R}"
+        echo -e "  ${H}       HASIL PELACAKAN           ${R}"
+        echo -e "  ${P}=================================${R}"
+        echo -e "  ${K}IP Address  :${P} $ip"
+        echo -e "  ${K}Provider    :${P} $isp"
+        echo -e "  ${K}Kota        :${P} $kota"
+        echo -e "  ${K}Provinsi    :${P} $prov"
+        echo -e "  ${K}Negara      :${P} $negara"
+        echo -e "  ${K}Zona Waktu  :${P} $zona"
+        echo -e "  ${K}ASN         :${P} $as"
+        echo -e "  ${P}---------------------------------${R}"
+        echo -e "  ${C}Google Maps :${P}"
+        echo -e "  https://maps.google.com/?q=$lat,$lon"
+        echo -e "  ${P}=================================${R}"
+        echo ""
         
-        read -p $'  \e[1;31m[Enter]\e[1;96m Kembali ke menu...\e[0m'
+        read -p "Tekan Enter untuk kembali ke menu..."
         banner
         menu
     fi
 }
 
-# Jalankan fungsi utama
-banner
-menu  0|00) printf "\n  \e[1;32mSampai jumpa, YantoSepinggan!\e[0m\n\n"; exit 0 ;;
-  *) printf "  \e[1;91m[!] Pilihan salah bro!\e[0m\n"; sleep 1; banner; menu ;;
-esac
-}
-
-myipaddr() {
-banner
-printf "\e[1;34m  Sedang mengambil data IP kamu...\e[0m\n\n"
-
-data1=$(curl -s --max-time 10 "https://ipapi.co/json/" -L)
-data2=$(curl -s --max-time 10 "http://ip-api.com/json/" -L)
-
-myip=$(echo "$data1" | jq -r '.ip // "Tidak ditemukan"')
-mycity=$(echo "$data1" | jq -r '.city // "Tidak ditemukan"')
-myregion=$(echo "$data1" | jq -r '.region // "Tidak ditemukan"')
-mycountry=$(echo "$data1" | jq -r '.country_name // "Tidak ditemukan"')
-mylat=$(echo "$data2" | jq -r '.lat // "Tidak ditemukan"')
-mylon=$(echo "$data2" | jq -r '.lon // "Tidak ditemukan"')
-mytime=$(echo "$data2" | jq -r '.timezone // "Tidak ditemukan"')
-mypostal=$(echo "$data2" | jq -r '.zip // "Tidak ditemukan"')
-myisp=$(echo "$data1" | jq -r '.org // "Tidak ditemukan"')
-myasn=$(echo "$data1" | jq -r '.asn // "Tidak ditemukan"')
-
-printf "  \e[1;93mIP Address    \e[1;96m:\e[1;92m $myip\e[0m\n"
-printf "  \e[1;93mKota          \e[1;96m:\e[1;92m $mycity\e[0m\n"
-printf "  \e[1;93mProvinsi      \e[1;96m:\e[1;92m $myregion\e[0m\n"
-printf "  \e[1;93mNegara        \e[1;96m:\e[1;92m $mycountry\e[0m\n"
-printf "\e[0m\n"
-printf "  \e[1;93mLatitude      \e[1;96m:\e[1;92m $mylat\e[0m\n"
-printf "  \e[1;93mLongitude     \e[1;96m:\e[1;92m $mylon\e[0m\n"
-printf "  \e[1;93mTime Zone     \e[1;96m:\e[1;92m $mytime\e[0m\n"
-printf "  \e[1;93mKode Pos      \e[1;96m:\e[1;92m $mypostal\e[0m\n"
-printf "\e[0m\n"
-printf "  \e[1;93mISP           \e[1;96m:\e[1;92m $myisp\e[0m\n"
-printf "  \e[1;93mASN           \e[1;96m:\e[1;92m $myasn\e[0m\n"
-printf "\e[0m\n"
-printf "  \e[1;93mGoogle Maps   \e[1;96m:\e[1;94m https://maps.google.com/?q=$mylat,$mylon\e[0m\n"
-printf "\e[0m\n"
-read -p $'  \e[1;31m[Enter]\e[1;96m Kembali ke menu...\e[0m' ; banner; menu
-}
-
-useripaddr() {
-banner
-printf "\e[0m\n"
-read -p $'  \e[1;31m[\e[1;37m~\e[1;31m]\e[1;92m Masukkan IP Target \e[1;96m: \e[1;93m' useripaddress
-
-if [[ -z "$useripaddress" ]]; then
-    printf "  \e[1;91m[!] IP tidak boleh kosong!\e[0m\n"; sleep 2; useripaddr
-fi
-
-printf "\e[1;34m  Sedang melacak $useripaddress... (tunggu 5-15 detik)\e[0m\n\n"
-
-data1=$(curl -s --max-time 15 "https://ipapi.co/$useripaddress/json/" -L)
-data2=$(curl -s --max-time 15 "http://ip-api.com/json/$useripaddress" -L)
-
-# Cek error rate limit atau invalid
-if echo "$data1" | jq -e '.error' >/dev/null 2>&1; then
-    message=$(echo "$data1" | jq -r '.message')
-    printf "  \e[1;91m[!] Error API: $message\e[0m\n"
-    printf "  \e[1;93m   Tunggu 1 menit atau coba IP lain.\e[0m\n"
-    sleep 3; banner; menu
-fi
-
-if echo "\( data2" | jq -e '.status' >/dev/null 2>&1 && [[ \)(echo "$data2" | jq -r '.status') != "success" ]]; then
-    printf "  \e[1;91m[!] Error dari ip-api.com: $(echo "$data2" | jq -r '.message')\e[0m\n"
-    sleep 3; banner; menu
-fi
-
-userip=$(echo "$data1" | jq -r '.ip // "Tidak ditemukan"')
-usercity=$(echo "$data1" | jq -r '.city // "Tidak ditemukan"')
-useregion=$(echo "$data1" | jq -r '.region // "Tidak ditemukan"')
-usercountry=$(echo "$data1" | jq -r '.country_name // "Tidak ditemukan"')
-userlat=$(echo "$data2" | jq -r '.lat // "Tidak ditemukan"')
-userlon=$(echo "$data2" | jq -r '.lon // "Tidak ditemukan"')
-usertime=$(echo "$data2" | jq -r '.timezone // "Tidak ditemukan"')
-userpostal=$(echo "$data2" | jq -r '.zip // "Tidak ditemukan"')
-userisp=$(echo "$data1" | jq -r '.org // "Tidak ditemukan"')
-userasn=$(echo "$data1" | jq -r '.asn // "Tidak ditemukan"')
-
-if [[ $userip == "Tidak ditemukan" ]]; then
-    printf "  \e[1;91m[!] Gagal dapat data IP. Mungkin invalid atau kena rate limit.\e[0m\n"
-    sleep 3; banner; menu
-fi
-
-printf "  \e[1;93mIP Address    \e[1;96m:\e[1;92m $userip\e[0m\n"
-printf "  \e[1;93mKota          \e[1;96m:\e[1;92m $usercity\e[0m\n"
-printf "  \e[1;93mProvinsi      \e[1;96m:\e[1;92m $useregion\e[0m\n"
-printf "  \e[1;93mNegara        \e[1;96m:\e[1;92m $usercountry\e[0m\n"
-printf "\e[0m\n"
-printf "  \e[1;93mLatitude      \e[1;96m:\e[1;92m $userlat\e[0m\n"
-printf "  \e[1;93mLongitude     \e[1;96m:\e[1;92m $userlon\e[0m\n"
-printf "  \e[1;93mTime Zone     \e[1;96m:\e[1;92m $usertime\e[0m\n"
-printf "  \e[1;93mKode Pos      \e[1;96m:\e[1;92m $userpostal\e[0m\n"
-printf "\e[0m\n"
-printf "  \e[1;93mISP           \e[1;96m:\e[1;92m $userisp\e[0m\n"
-printf "  \e[1;93mASN           \e[1;96m:\e[1;92m $userasn\e[0m\n"
-printf "\e[0m\n"
-printf "  \e[1;93mGoogle Maps   \e[1;96m:\e[1;94m https://maps.google.com/?q=$userlat,$userlon\e[0m\n"
-printf "\e[0m\n"
-read -p $'  \e[1;31m[Enter]\e[1;96m Kembali ke menu...\e[0m' ; banner; menu
-}
-
-banner
-menuread -p $'  \e[1;31m[\e[1;37m~\e[1;31m]\e[1;92m Masukkan IP Target \e[1;96m: \e[1;93m' useripaddress
-
-if [[ -z "$useripaddress" ]]; then
-    printf "  \e[1;91m[!] IP tidak boleh kosong!\e[0m\n"; sleep 2; useripaddr
-fi
-
-printf "\e[1;34m  Sedang melacak $useripaddress...\e[0m\n\n"
-
-ipaddripapico=$(curl -s "https://ipapi.co/$useripaddress/json/" -L)
-ipaddripapicom=$(curl -s "http://ip-api.com/json/$useripaddress" -L)
-
-userip=$(echo $ipaddripapico | grep -Po '(?<="ip":")[^"]*')
-usercity=$(echo $ipaddripapico | grep -Po '(?<="city":")[^"]*')
-useregion=$(echo $ipaddripapico | grep -Po '(?<="region":")[^"]*')
-usercountry=$(echo $ipaddripapico | grep -Po '(?<="country_name":")[^"]*')
-userlat=$(echo $ipaddripapicom | grep -Po '(?<="lat":)[^,}]*')
-userlon=$(echo $ipaddripapicom | grep -Po '(?<="lon":)[^,}]*')
-usertime=$(echo $ipaddripapicom | grep -Po '(?<="timezone":")[^"]*')
-userpostal=$(echo $ipaddripapicom | grep -Po '(?<="zip":")[^"]*')
-userisp=$(echo $ipaddripapico | grep -Po '(?<="org":")[^"]*')
-userasn=$(echo $ipaddripapico | grep -Po '(?<="asn":")[^"]*')
-
-if [[ $userip == "" ]]; then
-    printf "  \e[1;91m[!] IP tidak valid atau tidak ditemukan!\e[0m\n"
-    sleep 2; banner; menu
-fi
-
-printf "  \e[1;93mIP Address    \e[1;96m:\e[1;92m $userip\e[0m\n"
-printf "  \e[1;93mKota          \e[1;96m:\e[1;92m $usercity\e[0m\n"
-printf "  \e[1;93mProvinsi      \e[1;96m:\e[1;92m $useregion\e[0m\n"
-printf "  \e[1;93mNegara        \e[1;96m:\e[1;92m $usercountry\e[0m\n"
-printf "\e[0m\n"
-printf "  \e[1;93mLatitude      \e[1;96m:\e[1;92m $userlat\e[0m\n"
-printf "  \e[1;93mLongitude     \e[1;96m:\e[1;92m $userlon\e[0m\n"
-printf "  \e[1;93mTime Zone     \e[1;96m:\e[1;92m $usertime\e[0m\n"
-printf "  \e[1;93mKode Pos      \e[1;96m:\e[1;92m $userpostal\e[0m\n"
-printf "\e[0m\n"
-printf "  \e[1;93mISP           \e[1;96m:\e[1;92m $userisp\e[0m\n"
-printf "  \e[1;93mASN           \e[1;96m:\e[1;92m $userasn\e[0m\n"
-printf "\e[0m\n"
-printf "  \e[1;93mGoogle Maps   \e[1;96m:\e[1;94m https://maps.google.com/?q=$userlat,$userlon\e[0m\n"
-printf "\e[0m\n"
-read -p $'  \e[1;31m[Enter]\e[1;96m Kembali ke menu...\e[0m' ; banner; menu
-}
-
+# Jalankan
 banner
 menu
